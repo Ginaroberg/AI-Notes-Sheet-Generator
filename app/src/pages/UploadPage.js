@@ -4,21 +4,8 @@ import { BrowserRouter as Router, Route, Routes, useNavigate } from "react-route
 import { Container, Row, Col, Form, Button, Spinner, Alert } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-// function HomePage() {
-//   const navigate = useNavigate();
-//   const dataList = ['React', 'JavaScript', 'Web Development'];
+// I used chatgpt and perplexity ai to help with the formatting and the initial formation of the page.
 
-//   const handleButtonClick = () => {
-//     navigate('/topics', { state: { list: dataList } });
-//   };
-
-//   return (
-//     <div style={{ textAlign: 'center', marginTop: '50px' }}>
-//       <h1>Welcome to Home Page</h1>
-//       <button onClick={handleButtonClick}>Go to Second Page</button>
-//     </div>
-//   );
-// }
 
 function UploadPage() {
     const [files, setFiles] = useState([]);

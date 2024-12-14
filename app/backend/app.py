@@ -19,6 +19,9 @@ from werkzeug.utils import secure_filename
 
 from config import API_KEY
 
+
+## LABEL: We used Chat GPT and perplexity AI to write most of the call to api functions and the create paragraph functions
+
 app = Flask(__name__)
 CORS(app, resources={
     r"/*": {

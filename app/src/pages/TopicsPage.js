@@ -4,6 +4,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Alert, Form, Button, Spinner } from "react-bootstrap";
 import Dropdown from "../components/Dropdown.js";
 
+// I used chatgpt and perplexity ai to help with the formatting and the initial formation of the page. 
+
 function TopicsPage() {
   const location = useLocation();
   const navigate = useNavigate();
