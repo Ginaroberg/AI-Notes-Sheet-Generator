@@ -1,22 +1,21 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
-import {Alert} from "react-bootstrap"
-import Dropdown from "../components/Dropdown.js"
+import { Alert, Form, Button, Spinner } from "react-bootstrap";
+import Dropdown from "../components/Dropdown.js";
 
 function TopicsPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { list } = location.state || { list: [] };
-  console.log(list)
+  console.log(list);
 
   const [outputFileUrl, setOutputFileUrl] = useState(null);
-
 
   // Build dropdownData from the components of the input list
   const dropdownData = [];
   for (const slides in list) {
-    dropdownData.push({ id: slides, items: list[slides]});
+    dropdownData.push({ id: slides, items: list[slides] });
   }
 
   // State to store selected items for each dropdown
@@ -36,28 +35,27 @@ function TopicsPage() {
       ...prevSelectedItems,
       [dropdownId]: selected,
     }));
-
   };
 
   const handleBack = () => {
     navigate('/');
-  }
+  };
 
   // Function to handle the submission and send the POST request
   const handleSubmit = async () => {
     // Make selectedItems into a 2d array
-    var submit = []
+    var submit = [];
     for (const slide in selectedItems) {
-        submit.push(selectedItems[slide]);
+      submit.push(selectedItems[slide]);
     }
     // TODO: Make a post request and receive the pdf back
     const response = await axios.post("http://127.0.0.1:5000/download", selectedItems, {
-        headers: { "Content-Type": "application/json" },
-      });
-      console.log(response.data[0]);
-      const blob = new Blob([response.data], { type: "application/pdf" });
-      const url = window.URL.createObjectURL(blob);
-      setOutputFileUrl(url);
+      headers: { "Content-Type": "application/json" },
+    });
+    console.log(response.data[0]);
+    const blob = new Blob([response.data], { type: "application/pdf" });
+    const url = window.URL.createObjectURL(blob);
+    setOutputFileUrl(url);
     console.log(submit);
   };
 
@@ -73,6 +71,31 @@ function TopicsPage() {
     borderRadius: '5px',
     cursor: 'pointer',
     transition: 'all 0.3s ease'
+  };
+
+  // New state for issue reporting and loading
+  const [issueText, setIssueText] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Updated function to handle issue submission
+  const handleIssueSubmit = async () => {
+    if (issueText.trim()) {
+      setIsSubmitting(true);
+      try {
+        // Replace with your actual API endpoint for submitting issues
+        const response = await axios.post("http://127.0.0.1:5000/issue", { issue: issueText });
+        setIssueText(''); // Clear the textbox after submission
+        console.log(response.data[0]);
+        const blob = new Blob([response.data], { type: "application/pdf" });
+        const url = window.URL.createObjectURL(blob);
+        setOutputFileUrl(url);
+        setIssueText(''); // Clear the textbox after submission
+      } catch (error) {
+        console.error("Error submitting issue:", error);
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
   };
 
   return (
@@ -123,10 +146,45 @@ function TopicsPage() {
                 <a
                   href={outputFileUrl}
                   download="summarized_notes.pdf"
-                  className="btn btn-success btn-lg px-4"
+                  className="btn btn-success btn-lg px-4 mb-4"
                 >
                   Download Cheat Sheet
                 </a>
+
+                {/* Updated section for reporting issues */}
+                <hr />
+                <h5 className="mt-4 mb-3">Any issues? Tell ChatGPT</h5>
+                <Form>
+                  <Form.Group className="mb-3" controlId="issueForm">
+                    <Form.Control
+                      as="textarea"
+                      rows={3}
+                      value={issueText}
+                      onChange={(e) => setIssueText(e.target.value)}
+                      placeholder="Describe your issue here..."
+                    />
+                  </Form.Group>
+                  <Button 
+                    variant="secondary" 
+                    onClick={handleIssueSubmit}
+                    disabled={!issueText.trim() || isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Spinner
+                          as="span"
+                          animation="border"
+                          size="sm"
+                          role="status"
+                          aria-hidden="true"
+                        />
+                        <span className="ms-2">Submitting...</span>
+                      </>
+                    ) : (
+                      'Submit Issue'
+                    )}
+                  </Button>
+                </Form>
               </div>
             </Alert>
           )}
@@ -134,7 +192,6 @@ function TopicsPage() {
       </div>
     </div>
   );
-};
-
+}
 
 export default TopicsPage;

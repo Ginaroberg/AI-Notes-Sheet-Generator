@@ -84,6 +84,34 @@ def clean_text(text):
     
     return cleaned_text
 
+
+def edit_sheet_with_gpt(text, edit_req, api_key=API_KEY):
+    prompt = r"""The following text is my notes sheet for a class: {text}
+
+Complete the following request on the notes sheet and output the edited complete notes sheet. Make sure to keep your response in the same format as the original notes sheet and output the full, complete original notes sheet with the included edits. Do not say anything else besides the contents of the notes sheets in your response: 
+
+{edit_req} """
+    client = OpenAI(api_key=api_key)
+    out = ""
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are a helpful teaching assistant. Your task is to edit the notes sheet per the student's request and output the complete edited notes sheet. Make sure to keep your response in the same format as the original notes sheet and output the full, complete original notes sheet with the included edits. Do not say anything else besides the contents of the notes sheets in your response."},
+                {"role": "user", "content":prompt.format(text=text, edit_req=edit_req)}
+            ],
+            max_tokens=16384,
+            n=1,
+            temperature=0.5,
+        )
+
+        analysis = response.choices[0].message.content.strip()
+        out = analysis
+    except Exception as e:
+        return f"Error with OpenAI API: {str(e)}"
+    
+    return out
+
 API_KEY = API_KEY
 def analyze_text_for_students(text_dict, api_key = API_KEY):
     client = OpenAI(api_key=api_key)
@@ -476,7 +504,17 @@ def download():
     
     return send_file(output_filename, mimetype='application/pdf')
 
-    
+@app.route('/issue', methods=['POST'])
+def edit_issue():
+    data = request.get_json()
+    notes = " ".join(app.config['extracted_texts'].values())
+    out = edit_sheet_with_gpt(notes, data["issue"], api_key=API_KEY)
+    edited_text = {"edited": out}
 
+    print(out)
+    output_filename = "edited"
+    create_columned_pdf(output_filename, edited_text)
+    
+    return send_file(output_filename, mimetype='application/pdf')
 if __name__ == '__main__':
     app.run(debug=True)
